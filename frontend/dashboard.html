@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="navbar">
+  <h2>Deepfake Dashboard</h2>
+  <a href="index.html">Home</a>
+</div>
+
+<div class="container">
+
+  <!-- INPUT -->
+  <div class="input-box">
+    <input type="text" id="url" placeholder="Paste news URL...">
+    <button class="btn" onclick="scan()">Scan</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results">
+    <div class="result-card">
+      <h3>Image Score</h3>
+      <p id="imageScore">--</p>
+    </div>
+
+    <div class="result-card">
+      <h3>Text Score</h3>
+      <p id="textScore">--</p>
+    </div>
+
+    <div class="result-card">
+      <h3>Final Score</h3>
+      <p id="finalScore">--</p>
+    </div>
+
+    <div class="result-card">
+      <h3>Verdict</h3>
+      <p id="verdict">--</p>
+    </div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  <h2 style="margin-top:40px;">Scan History</h2>
+
+  <table border="1" width="100%" style="margin-top:10px;">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Image</th>
+        <th>Text</th>
+        <th>Final</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody id="historyTable"></tbody>
+  </table>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
