@@ -1,55 +1,159 @@
 import os
+import re
+import json
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-def analyze_text(text):
+# ✅ STABLE MODEL (IMPORTANT FIX)
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={api_key}"
+
+MAX_CHARS = 12000
+
+
+def analyze_text(text: str, url: str = "") -> dict:
+
+    if not text.strip():
+        return fallback_analysis(text)
+
+    if not API_KEY:
+        print("[TextAnalysis] No API key — fallback used.")
+        return fallback_analysis(text)
+
+    truncated = text[:MAX_CHARS]
+
+    prompt = f"""
+You are an expert AI system for detecting fake news and misinformation.
+
+Analyze the following news article carefully using these criteria:
+- Factual accuracy and realism
+- Presence of verifiable sources or evidence
+- Tone (neutral vs sensational or emotional)
+- Logical consistency of claims
+- Signs of misinformation, propaganda, or exaggeration
+
+Scoring rules:
+- 0.9–1.0 → Highly credible, factual, reliable journalism
+- 0.7–0.89 → Mostly credible with minor issues
+- 0.4–0.69 → Suspicious, lacks evidence or contains exaggeration
+- 0.0–0.39 → Likely fake, misleading, or fabricated
+
+Be decisive. Avoid neutral answers unless truly uncertain.
+
+Return ONLY valid JSON:
+{{
+  "score": <number between 0 and 1>,
+  "verdict": "<Real|Mostly Real|Suspicious|Fake>",
+  "reason": "<clear 1-2 line explanation>"
+}}
+
+Article:
+{truncated}
+"""
+
     try:
-        if not API_KEY:
-            return {"score": 0.5}
+        response = requests.post(
+            GEMINI_URL.format(api_key=API_KEY),
+            json={"contents": [{"parts": [{"text": prompt}]}]},
+            timeout=15
+        )
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={API_KEY}"
+        print("[Gemini Status]", response.status_code)
 
-        prompt = f"""
-        Analyze the following news article and give a credibility score.
+        if response.status_code != 200:
+            print("[TextAnalysis] HTTP Error:", response.text[:200])
+            return fallback_analysis(text)
 
-        Rules:
-        - Return ONLY a number between 0 and 1
-        - 0 = completely fake
-        - 1 = completely real
+        data = response.json()
 
-        Example output:
-        0.75
+        candidates = data.get("candidates", [])
+        if not candidates:
+            print("[TextAnalysis] No candidates")
+            return fallback_analysis(text)
 
-        Text:
-        {text}
-        """
+        parts = candidates[0].get("content", {}).get("parts", [])
+        if not parts:
+            print("[TextAnalysis] No parts")
+            return fallback_analysis(text)
 
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}]
+        raw = parts[0].get("text", "")
+        print("[TextAnalysis] Output:", raw[:300])
+
+        # ✅ FIXED JSON EXTRACTION (IMPORTANT)
+        match = re.search(r'\{[\s\S]*\}', raw)
+
+        if not match:
+            print("❌ No JSON found")
+            return fallback_analysis(text)
+
+        try:
+            result = json.loads(match.group())
+        except json.JSONDecodeError as e:
+            print("❌ JSON parse error:", e)
+            return fallback_analysis(text)
+
+        score = round(max(0.0, min(1.0, float(result.get("score", 0.5)))), 2)
+
+        return {
+            "score": score,
+            "analysis": result.get("reason", "Analysis complete"),
+            "verdict": result.get("verdict", "Unknown"),
+
+            # 🔥 report fields (safe for frontend)
+            "summary": "",
+            "red_flags": [],
+            "positive_signals": [],
+            "risk_level": "",
+
+            "fake_keywords": 0,
+            "real_keywords": 0,
+            "trusted_matches": 0,
         }
 
-        res = requests.post(url, json=payload)
-        data = res.json()
-
-        if "candidates" not in data:
-            return {"score": 0.5}
-
-        output = data['candidates'][0]['content']['parts'][0]['text']
-
-        print("Gemini Output:", output)
-
-        # Extract number safely
-        try:
-            score = float(output.strip())
-            score = max(0, min(score, 1))  # clamp between 0–1
-        except:
-            score = 0.5
-
-        return {"score": round(score, 2)}
+    except requests.exceptions.Timeout:
+        print("[TextAnalysis] Timeout")
+        return fallback_analysis(text)
 
     except Exception as e:
-        print("Gemini Error:", str(e))
-        return {"score": 0.5}
+        print("[TextAnalysis ERROR]", e)
+        return fallback_analysis(text)
+
+
+# 🔻 FALLBACK (IMPROVED)
+def fallback_analysis(text: str) -> dict:
+    text_lower = text.lower()
+
+    fake_words = [
+        "shocking", "fake", "hoax", "viral", "unbelievable",
+        "exposed", "conspiracy", "breaking", "urgent"
+    ]
+
+    real_words = [
+        "report", "official", "confirmed", "according to",
+        "research", "study", "data", "evidence"
+    ]
+
+    fake_count = sum(1 for w in fake_words if w in text_lower)
+    real_count = sum(1 for w in real_words if w in text_lower)
+
+    # ✅ STRONGER SCORING (FIXES "ALL SUSPICIOUS")
+    score = 0.5 + (real_count * 0.08) - (fake_count * 0.08)
+    score = round(max(0.0, min(1.0, score)), 2)
+
+    return {
+        "score": score,
+        "analysis": "Fallback keyword analysis used",
+        "verdict": "Unknown",
+
+        # 🔥 required fields (prevents frontend crash)
+        "summary": "No summary available",
+        "red_flags": [],
+        "positive_signals": [],
+        "risk_level": "Unknown",
+
+        "fake_keywords": fake_count,
+        "real_keywords": real_count,
+        "trusted_matches": 0,
+    }
