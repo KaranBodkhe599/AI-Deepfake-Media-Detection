@@ -1,52 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
+  <title>Deepfake Detection Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- 🔷 NAVBAR -->
 <div class="navbar">
-  <h2>Deepfake Dashboard</h2>
+  <h2>Deepfake Detection System</h2>
   <a href="index.html">Home</a>
 </div>
 
 <div class="container">
 
-  <!-- INPUT -->
+  <!-- 🔍 INPUT -->
   <div class="input-box">
-    <input type="text" id="url" placeholder="Paste news URL...">
+    <input type="text" id="url" placeholder="Paste news article URL...">
     <button class="btn" onclick="scan()">Scan</button>
   </div>
 
-  <!-- RESULTS -->
+  <!-- 📊 RESULT CARDS -->
   <div class="results">
     <div class="result-card">
-      <h3>Image Score</h3>
+      <h3>🖼 Image Score</h3>
       <p id="imageScore">--</p>
     </div>
 
     <div class="result-card">
-      <h3>Text Score</h3>
+      <h3>📝 Text Score</h3>
       <p id="textScore">--</p>
     </div>
 
     <div class="result-card">
-      <h3>Final Score</h3>
+      <h3>📊 Final Score</h3>
       <p id="finalScore">--</p>
     </div>
 
     <div class="result-card">
-      <h3>Verdict</h3>
-      <p id="verdict">--</p>
+      <h3>⚖️ Verdict</h3>
+      <p id="verdict" class="verdict">--</p>
     </div>
   </div>
 
-  <!-- HISTORY TABLE -->
-  <h2 style="margin-top:40px;">Scan History</h2>
+  <!-- 🧠 ANALYSIS -->
+  <div class="analysis-box">
 
-  <table border="1" width="100%" style="margin-top:10px;">
+    <h2>AI Analysis</h2>
+    <p id="analysisText">--</p>
+
+    <!-- 📈 Confidence -->
+    <div class="confidence-section">
+      <h4>Confidence</h4>
+      <p id="confidence">--</p>
+      <div class="progress-bar">
+        <div id="bar"></div>
+      </div>
+    </div>
+
+    <!-- 🔍 Indicators -->
+    <div class="keywords">
+      <p>❗ Fake: <span id="fakeCount">0</span></p>
+      <p>✅ Real: <span id="realCount">0</span></p>
+      <p>🔗 Trusted: <span id="trustedScore">0</span></p>
+    </div>
+
+  </div>
+
+  <!-- 📜 HISTORY -->
+  <h2 class="history-title">Scan History</h2>
+
+  <table class="history-table">
     <thead>
       <tr>
         <th>ID</th>
@@ -57,11 +82,17 @@
         <th>Verdict</th>
       </tr>
     </thead>
-    <tbody id="historyTable"></tbody>
+
+    <tbody id="historyTable">
+      <tr>
+        <td colspan="6">No scans yet</td>
+      </tr>
+    </tbody>
   </table>
 
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
