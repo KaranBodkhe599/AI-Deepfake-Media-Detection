@@ -1,18 +1,18 @@
 import sqlite3
 import os
 
-# ✅ FIXED PATH (absolute path)
+# FIXED PATH (absolute path)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "deepfake.db")
 
 
-# 🔹 GET CONNECTION
+# GET CONNECTION
 def get_conn():
-    print("📂 Using DB:", DB_PATH)   # 🔥 DEBUG
+    print("Using DB:", DB_PATH)  
     return sqlite3.connect(DB_PATH)
 
 
-# 🔹 INIT DB
+# INIT DB
 def init_db():
     try:
         conn = get_conn()
@@ -33,17 +33,17 @@ def init_db():
         conn.commit()
         conn.close()
 
-        print("✅ Database ready")
+        print("Database ready")
 
     except Exception as e:
-        print("❌ DB INIT ERROR:", e)
+        print("DB INIT ERROR:", e)
 
 
-# 🔹 SAVE RESULT
+# SAVE RESULT
 def save_result(data):
     conn = None
     try:
-        print("📥 Saving:", data)
+        print("Saving:", data)
 
         conn = get_conn()
         cursor = conn.cursor()
@@ -61,17 +61,17 @@ def save_result(data):
 
         conn.commit()
 
-        print("✅ Saved to SQLite")
+        print("Saved to SQLite")
 
     except Exception as e:
-        print("❌ SAVE ERROR:", e)
+        print("SAVE ERROR:", e)
 
     finally:
         if conn:
             conn.close()
 
 
-# 🔹 FETCH HISTORY
+# FETCH HISTORY
 def get_all_results():
     conn = None
     try:
@@ -98,12 +98,12 @@ def get_all_results():
             for r in rows
         ]
 
-        print("📊 Fetched rows:", results)  # 🔥 DEBUG
+        print("Fetched rows:", results)  # 🔥 DEBUG
 
         return results
 
     except Exception as e:
-        print("❌ FETCH ERROR:", e)
+        print("FETCH ERROR:", e)
         return []
 
     finally:

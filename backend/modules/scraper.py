@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from newspaper import Article, Config
 from urllib.parse import urljoin
 
-# 🔥 Strong headers (avoid blocking)
+# Strong headers (avoid blocking)
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "

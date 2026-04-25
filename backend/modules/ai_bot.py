@@ -7,11 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# ✅ STABLE MODEL (IMPORTANT FIX)
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={api_key}"
 
 MAX_CHARS = 12000
-
 
 def analyze_text(text: str, url: str = "") -> dict:
 
@@ -52,7 +50,6 @@ Return ONLY valid JSON:
 Article:
 {truncated}
 """
-
     try:
         response = requests.post(
             GEMINI_URL.format(api_key=API_KEY),
@@ -81,17 +78,16 @@ Article:
         raw = parts[0].get("text", "")
         print("[TextAnalysis] Output:", raw[:300])
 
-        # ✅ FIXED JSON EXTRACTION (IMPORTANT)
         match = re.search(r'\{[\s\S]*\}', raw)
 
         if not match:
-            print("❌ No JSON found")
+            print("No JSON found")
             return fallback_analysis(text)
 
         try:
             result = json.loads(match.group())
         except json.JSONDecodeError as e:
-            print("❌ JSON parse error:", e)
+            print("JSON parse error:", e)
             return fallback_analysis(text)
 
         score = round(max(0.0, min(1.0, float(result.get("score", 0.5)))), 2)
@@ -101,7 +97,6 @@ Article:
             "analysis": result.get("reason", "Analysis complete"),
             "verdict": result.get("verdict", "Unknown"),
 
-            # 🔥 report fields (safe for frontend)
             "summary": "",
             "red_flags": [],
             "positive_signals": [],
@@ -120,8 +115,6 @@ Article:
         print("[TextAnalysis ERROR]", e)
         return fallback_analysis(text)
 
-
-# 🔻 FALLBACK (IMPROVED)
 def fallback_analysis(text: str) -> dict:
     text_lower = text.lower()
 
@@ -138,7 +131,6 @@ def fallback_analysis(text: str) -> dict:
     fake_count = sum(1 for w in fake_words if w in text_lower)
     real_count = sum(1 for w in real_words if w in text_lower)
 
-    # ✅ STRONGER SCORING (FIXES "ALL SUSPICIOUS")
     score = 0.5 + (real_count * 0.08) - (fake_count * 0.08)
     score = round(max(0.0, min(1.0, score)), 2)
 
@@ -147,7 +139,6 @@ def fallback_analysis(text: str) -> dict:
         "analysis": "Fallback keyword analysis used",
         "verdict": "Unknown",
 
-        # 🔥 required fields (prevents frontend crash)
         "summary": "No summary available",
         "red_flags": [],
         "positive_signals": [],

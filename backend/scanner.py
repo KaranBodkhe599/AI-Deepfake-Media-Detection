@@ -31,7 +31,7 @@ def _error_result(reason: str = "Processing failed") -> dict:
 # Main function
 def scan_article(url: str) -> dict:
     try:
-        print("🔍 Starting scan...")
+        print("Starting scan...")
 
         # ── 1. SCRAPE ─────────────────────────────
         article = scrape_article(url)
@@ -39,12 +39,12 @@ def scan_article(url: str) -> dict:
         image = article.get("image", "")
 
         if not text or len(text.strip()) < 50:
-            print("⚠️ No valid text found")
+            print("No valid text found")
             return _error_result("No text extracted from article")
 
-        print(f"📰 Title: {article.get('title')}")
-        print(f"🧾 Text length: {len(text)} chars")
-        print(f"🖼 Image found: {'Yes' if image else 'No'}")
+        print(f"Title: {article.get('title')}")
+        print(f"Text length: {len(text)} chars")
+        print(f"Image found: {'Yes' if image else 'No'}")
 
         # ── 2. ANALYSIS ───────────────────────────
         image_result = analyze_image(image)
@@ -85,7 +85,7 @@ def scan_article(url: str) -> dict:
             "video_count": 0,
         }
 
-        print("✅ Scan completed successfully")
+        print("Scan completed successfully")
 
         return result
 

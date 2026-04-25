@@ -6,14 +6,14 @@ from database import init_db, save_result, get_all_results
 import os
 from dotenv import load_dotenv
 load_dotenv()
-print("🔑 GEMINI KEY:", "✅ Loaded" if os.getenv("GEMINI_API_KEY") else "❌ MISSING")
+print("🔑 GEMINI KEY:", "Loaded" if os.getenv("GEMINI_API_KEY") else "❌ MISSING")
 
 app = FastAPI(title="Deepfake Detector API")
 
-# 🔹 INIT DATABASE
+# INIT DATABASE
 init_db()
 
-# 🔹 CORS (allow frontend)
+# CORS (allow frontend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,35 +22,35 @@ app.add_middleware(
 )
 
 
-# 🔹 REQUEST MODEL
+# REQUEST MODEL
 class ScanRequest(BaseModel):
     url: str
 
 
-# 🔹 HOME
+# HOME
 @app.get("/")
 def home():
     return {"message": "API Running ✅"}
 
 
-# 🔹 SCAN API
+# SCAN API
 @app.post("/scan")
 def scan(data: ScanRequest):
     try:
         print("🔗 Scanning:", data.url)
 
         result = scan_article(data.url)
-        print("📊 RESULT:", result)
+        print("RESULT:", result)
 
-        # 🔥 ALWAYS SAVE (remove condition for debugging)
+        # ALWAYS SAVE (remove condition for debugging)
         save_result(result)
 
-        print("✅ Saved to DB")
+        print("Saved to DB")
 
         return result
 
     except Exception as e:
-        print("❌ Scan error:", e)
+        print("Scan error:", e)
 
         return {
             "title": "Error",
@@ -63,14 +63,14 @@ def scan(data: ScanRequest):
         }
 
 
-# 🔹 HISTORY API
+# HISTORY API
 @app.get("/history")
 def history():
     try:
         data = get_all_results()
-        print("📜 HISTORY:", data)
+        print("HISTORY:", data)
         return data
 
     except Exception as e:
-        print("❌ History error:", e)
+        print("History error:", e)
         return []

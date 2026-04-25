@@ -13,7 +13,7 @@ GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-fla
 def fact_check_article(text):
 
     if not API_KEY:
-        print("⚠️ No Gemini API Key")
+        print("No Gemini API Key")
         return fallback("No API key")
 
     try:
@@ -41,12 +41,12 @@ News:
         )
 
         if response.status_code != 200:
-            print("❌ Gemini HTTP Error:", response.text)
+            print("Gemini HTTP Error:", response.text)
             return fallback("API error")
 
         data = response.json()
 
-        # 🔥 SAFE EXTRACTION
+        # SAFE EXTRACTION
         candidates = data.get("candidates", [])
         if not candidates:
             return fallback("No candidates")
@@ -57,9 +57,9 @@ News:
             return fallback("No content")
 
         output = parts[0].get("text", "")
-        print("🧠 Gemini Output:", output)
+        print("Gemini Output:", output)
 
-        # 🔥 SAFE JSON EXTRACTION
+        # SAFE JSON EXTRACTION
         match = re.search(r'\{.*?\}', output, re.DOTALL)
         if not match:
             return fallback("No JSON found")
@@ -79,11 +79,11 @@ News:
         return fallback("Timeout")
 
     except Exception as e:
-        print("❌ FactCheck Error:", e)
+        print("FactCheck Error:", e)
         return fallback("Exception")
 
 
-# 🔻 FALLBACK
+# FALLBACK
 def fallback(reason="Unavailable"):
     return {
         "fact_score": 0.5,

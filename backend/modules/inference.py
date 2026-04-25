@@ -24,7 +24,7 @@ def analyze_image(image_url: str) -> dict:
         return fallback("No image")
 
     try:
-        # 🔹 DOWNLOAD IMAGE
+        # DOWNLOAD IMAGE
         response = requests.get(image_url, timeout=8, headers=HEADERS)
 
         if response.status_code != 200:
@@ -37,7 +37,7 @@ def analyze_image(image_url: str) -> dict:
         raw_bytes = response.content
         file_size = len(raw_bytes)
 
-        # 🔹 DECODE IMAGE
+        # DECODE IMAGE
         img_array = np.frombuffer(raw_bytes, np.uint8)
         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
@@ -51,12 +51,12 @@ def analyze_image(image_url: str) -> dict:
 
         total_pixels = height * width
 
-        # 🔥 IMPROVED BASE SCORE
+        # IMPROVED BASE SCORE
         score = 0.6
         flags = []
         positive = []
 
-        # 🔹 SHARPNESS (Laplacian)
+        # SHARPNESS (Laplacian)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         sharpness = float(np.var(cv2.Laplacian(gray, cv2.CV_64F)))
 
@@ -73,7 +73,7 @@ def analyze_image(image_url: str) -> dict:
             score -= 0.15
             flags.append("Very blurry")
 
-        # 🔹 COMPRESSION (bytes per pixel)
+        # COMPRESSION (bytes per pixel)
         bpp = file_size / total_pixels
 
         if bpp < 0.10:
@@ -86,7 +86,7 @@ def analyze_image(image_url: str) -> dict:
             score += 0.10
             positive.append("High quality image")
 
-        # 🔹 ASPECT RATIO
+        # ASPECT RATIO
         aspect = width / height
 
         if aspect > 4 or aspect < 0.25:
@@ -96,15 +96,15 @@ def analyze_image(image_url: str) -> dict:
             score -= 0.05
             flags.append("Unusual aspect ratio")
 
-        # 🔹 STOCK IMAGE CHECK
+        # STOCK IMAGE CHECK
         if any(domain in image_url.lower() for domain in STOCK_PHOTO_DOMAINS):
             score -= 0.10
             flags.append("Stock image source")
 
-        # 🔹 FINAL SCORE CLAMP
+        # FINAL SCORE CLAMP
         score = round(max(0.0, min(1.0, score)), 2)
 
-        # 🔹 IMPROVED ANALYSIS TEXT
+        # IMPROVED ANALYSIS TEXT
         analysis = f"Image score {score}. "
 
         if score >= 0.75:
@@ -134,7 +134,7 @@ def analyze_image(image_url: str) -> dict:
             "flags": flags,
             "positive_signals": positive,
 
-            # 🔥 Extra metrics for dashboard
+            # Extra metrics for dashboard
             "sharpness": round(sharpness, 2),
             "bytes_per_pixel": round(bpp, 3),
             "aspect_ratio": round(aspect, 2),
@@ -149,7 +149,7 @@ def analyze_image(image_url: str) -> dict:
         return fallback("Exception")
 
 
-# 🔻 FALLBACK
+# FALLBACK
 def fallback(reason="Error"):
     return {
         "score": 0.5,
